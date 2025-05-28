@@ -3,9 +3,78 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Video record POC</title>
+    <title>Video recording POC</title>
+    <style>
+      body {
+        font-family: monospace;
+      }
+    </style>
   </head>
   <body>
-    <h1>Hello GitHub Pages!</h1>
+    <h3>Devices</h3>
+    <div id="devices-container"></div>
+
+    <h3>Camera</h3>
+    <video id="camera"></video>
+
+    <script type="module">
+      const allDevices = await navigator.mediaDevices.enumerateDevices();
+      const devices = allDevices.filter(({ kind }) => kind === "videoinput");
+
+      console.log(devices);
+
+      for (const device of devices) {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { deviceId: { ideal: device.deviceId } },
+        });
+        const tracks = stream.getVideoTracks();
+        const spec = tracks
+          .map((track) => {
+            const settings = track.getSettings();
+            return `${settings.width}x${settings.height}@${settings.frameRate}hz`;
+          })
+          .join(" ");
+
+        const radio = document.createElement("input");
+        radio.type = "radio";
+        radio.id = device.deviceId;
+        radio.name = device.deviceId;
+        radio.addEventListener("click", () => {});
+        const label = document.createElement("label");
+        label.htmlFor = device.deviceId;
+        label.textContent = `${device.label} ${spec}`;
+
+        const devicesContainer = document.getElementById("devices-container");
+        devicesContainer.appendChild(radio);
+        devicesContainer.appendChild(label);
+        devicesContainer.appendChild(document.createElement("br"));
+      }
+
+      // const stream = await navigator.mediaDevices.getUserMedia({
+      //   video: true,
+      // });
+
+      // const camera = document.getElementById("camera");
+      // camera.srcObject = stream;
+      // const tracks = stream.getVideoTracks();
+
+      // for (const track of tracks) {
+      //   const settings = track.getSettings();
+
+      //   const radio = document.createElement("input");
+      //   radio.type = "radio";
+      //   radio.id = track.id;
+      //   radio.name = track.id;
+      //   radio.addEventListener("click", () => {});
+      //   const label = document.createElement("label");
+      //   label.htmlFor = track.id;
+      //   label.textContent = `${track.label} ${settings.width}x${settings.height}@${settings.frameRate}hz`;
+
+      //   const tracksContainer = document.getElementById("tracks-container");
+      //   tracksContainer.appendChild(radio);
+      //   tracksContainer.appendChild(label);
+      //   tracksContainer.appendChild(document.createElement("br"));
+      // }
+    </script>
   </body>
 </html>
