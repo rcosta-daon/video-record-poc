@@ -20,13 +20,13 @@
     <video id="camera"></video>
 
     <script type="module">
-      await navigator.mediaDevices.getUserMedia({
-        video: true,
-      });
+      await navigator.mediaDevices.getUserMedia({ video: true });
 
       const allDevices = await navigator.mediaDevices.enumerateDevices();
       const devices = allDevices.filter(({ kind }) => kind === "videoinput");
 
+      const camera = document.getElementById("camera");
+      const radios = [];
       for (const device of devices) {
         const stream = await navigator.mediaDevices.getUserMedia({
           video: { deviceId: { exact: device.deviceId } },
@@ -43,7 +43,14 @@
         radio.type = "radio";
         radio.id = device.deviceId;
         radio.name = device.deviceId;
-        radio.addEventListener("click", () => {});
+        radio.addEventListener("click", () => {
+          for (const radio of radios) {
+            radio.checked = false;
+          }
+          radio.checked = true;
+          camera.srcObject = stream;
+        });
+        radios.push(radio);
         const label = document.createElement("label");
         label.htmlFor = device.deviceId;
         label.textContent = `${device.label} ${spec}`;
@@ -57,32 +64,6 @@
           track.stop();
         }
       }
-
-      // const stream = await navigator.mediaDevices.getUserMedia({
-      //   video: true,
-      // });
-
-      // const camera = document.getElementById("camera");
-      // camera.srcObject = stream;
-      // const tracks = stream.getVideoTracks();
-
-      // for (const track of tracks) {
-      //   const settings = track.getSettings();
-
-      //   const radio = document.createElement("input");
-      //   radio.type = "radio";
-      //   radio.id = track.id;
-      //   radio.name = track.id;
-      //   radio.addEventListener("click", () => {});
-      //   const label = document.createElement("label");
-      //   label.htmlFor = track.id;
-      //   label.textContent = `${track.label} ${settings.width}x${settings.height}@${settings.frameRate}hz`;
-
-      //   const tracksContainer = document.getElementById("tracks-container");
-      //   tracksContainer.appendChild(radio);
-      //   tracksContainer.appendChild(label);
-      //   tracksContainer.appendChild(document.createElement("br"));
-      // }
     </script>
   </body>
 </html>
