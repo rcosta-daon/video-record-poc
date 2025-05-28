@@ -11,6 +11,8 @@
     </style>
   </head>
   <body>
+    <h2>V1</h2>
+
     <h3>Devices</h3>
     <div id="devices-container"></div>
 
@@ -18,14 +20,16 @@
     <video id="camera"></video>
 
     <script type="module">
+      await navigator.mediaDevices.getUserMedia({
+        video: true,
+      });
+
       const allDevices = await navigator.mediaDevices.enumerateDevices();
       const devices = allDevices.filter(({ kind }) => kind === "videoinput");
 
-      console.log(devices);
-
       for (const device of devices) {
         const stream = await navigator.mediaDevices.getUserMedia({
-          video: { deviceId: { ideal: device.deviceId } },
+          video: { deviceId: { exact: device.deviceId } },
         });
         const tracks = stream.getVideoTracks();
         const spec = tracks
@@ -48,6 +52,10 @@
         devicesContainer.appendChild(radio);
         devicesContainer.appendChild(label);
         devicesContainer.appendChild(document.createElement("br"));
+
+        for (const track of tracks) {
+          track.stop();
+        }
       }
 
       // const stream = await navigator.mediaDevices.getUserMedia({
