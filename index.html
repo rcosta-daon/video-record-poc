@@ -11,13 +11,13 @@
     </style>
   </head>
   <body>
-    <h2>V3</h2>
+    <h2>V6</h2>
 
     <h3>Devices</h3>
     <div id="devices-container"></div>
 
     <h3>Camera</h3>
-    <video id="camera"></video>
+    <video id="camera" playsinline autoplay muted></video>
 
     <h3>Record</h3>
     <label for="duration">Duration: </label>
@@ -33,49 +33,69 @@
 
       const devices = allDevices.filter(({ kind }) => kind === "videoinput");
 
+      const devicesContainer = document.getElementById("devices-container");
       const camera = document.getElementById("camera");
       const radios = [];
-      for (const device of [devices[0]]) {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { deviceId: { exact: device.deviceId } },
-        });
-        const tracks = stream.getVideoTracks();
-        const spec = tracks
-          .map((track) => {
-            const settings = track.getSettings();
-            return `${settings.width}x${settings.height}@${settings.frameRate}hz`;
-          })
-          .join(" ");
-
-        const radio = document.createElement("input");
-        radio.type = "radio";
-        radio.id = device.deviceId;
-        radio.name = device.deviceId;
-        radio.addEventListener("click", async () => {
-          for (const radio of radios) {
-            radio.checked = false;
-          }
-          radio.checked = true;
-          camera.srcObject = await navigator.mediaDevices.getUserMedia({
+      for (const device of devices) {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({
             video: { deviceId: { exact: device.deviceId } },
           });
-        });
-        radios.push(radio);
-        const label = document.createElement("label");
-        label.htmlFor = device.deviceId;
-        label.textContent = `${device.label} ${spec}`;
+          const tracks = stream.getVideoTracks();
+          const spec = tracks
+            .map((track) => {
+              const settings = track.getSettings();
+              return `${settings.width}x${settings.height}@${settings.frameRate}hz`;
+            })
+            .join(" ");
 
-        const devicesContainer = document.getElementById("devices-container");
-        devicesContainer.appendChild(radio);
-        devicesContainer.appendChild(label);
-        devicesContainer.appendChild(document.createElement("br"));
+          const radio = document.createElement("input");
+          radio.type = "radio";
+          radio.id = device.deviceId;
+          radio.name = device.deviceId;
+          radio.addEventListener("click", async () => {
+            for (const radio of radios) {
+              radio.checked = false;
+            }
+            radio.checked = true;
+            camera.srcObject = await navigator.mediaDevices.getUserMedia({
+              video: { deviceId: { exact: device.deviceId } },
+            });
+          });
+          radios.push(radio);
+          const label = document.createElement("label");
+          label.htmlFor = device.deviceId;
+          label.textContent = `${device.label} ${spec}`;
 
-        for (const track of tracks) {
-          track.stop();
+          devicesContainer.appendChild(radio);
+          devicesContainer.appendChild(label);
+          devicesContainer.appendChild(document.createElement("br"));
+
+          for (const track of tracks) {
+            track.stop();
+          }
+        } catch (error) {
+          const p = document.createElement("p");
+          p.textContent = `${device.label} (failed)`;
+          devicesContainer.appendChild(p);
+          devicesContainer.appendChild(document.createElement("br"));
         }
-
-        await new Promise((resolve) => setTimeout(resolve, 100));
       }
+
+      let duration;
+      const durationInput = document.getElementById("duration");
+      durationInput.value = String(duration);
+      durationInput.addEventListener("change", () => {
+        duration = Number(durationInput.value);
+      });
+
+      const record = document.getElementById("record");
+      record.addEventListener("click", () => {
+        record.disabled = true;
+        setTimeout(() => {
+          record.disabled = false;
+        }, duration);
+      });
     </script>
   </body>
 </html>
