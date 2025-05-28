@@ -11,7 +11,7 @@
     </style>
   </head>
   <body>
-    <h2>V2</h2>
+    <h2>V3</h2>
 
     <h3>Devices</h3>
     <div id="devices-container"></div>
@@ -29,11 +29,13 @@
       (await navigator.mediaDevices.getUserMedia({ video: true })).getTracks().forEach((track) => track.stop());
 
       const allDevices = await navigator.mediaDevices.enumerateDevices();
+      console.log(allDevices);
+
       const devices = allDevices.filter(({ kind }) => kind === "videoinput");
 
       const camera = document.getElementById("camera");
       const radios = [];
-      for (const device of [devices.slice[0]]) {
+      for (const device of [devices[0]]) {
         const stream = await navigator.mediaDevices.getUserMedia({
           video: { deviceId: { exact: device.deviceId } },
         });
