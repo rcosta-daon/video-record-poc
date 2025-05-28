@@ -20,7 +20,7 @@
     <video id="camera"></video>
 
     <script type="module">
-      await navigator.mediaDevices.getUserMedia({ video: true });
+      (await navigator.mediaDevices.getUserMedia({ video: true })).getTracks().forEach((track) => track.stop());
 
       const allDevices = await navigator.mediaDevices.enumerateDevices();
       const devices = allDevices.filter(({ kind }) => kind === "videoinput");
@@ -43,12 +43,14 @@
         radio.type = "radio";
         radio.id = device.deviceId;
         radio.name = device.deviceId;
-        radio.addEventListener("click", () => {
+        radio.addEventListener("click", async () => {
           for (const radio of radios) {
             radio.checked = false;
           }
           radio.checked = true;
-          camera.srcObject = stream;
+          camera.srcObject = await navigator.mediaDevices.getUserMedia({
+            video: { deviceId: { exact: device.deviceId } },
+          });
         });
         radios.push(radio);
         const label = document.createElement("label");
