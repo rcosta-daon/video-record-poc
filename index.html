@@ -11,13 +11,19 @@
     </style>
   </head>
   <body>
-    <h2>V1</h2>
+    <h2>V2</h2>
 
     <h3>Devices</h3>
     <div id="devices-container"></div>
 
     <h3>Camera</h3>
     <video id="camera"></video>
+
+    <h3>Record</h3>
+    <label for="duration">Duration: </label>
+    <input type="number" id="duration" name="duration" />
+    <br />
+    <button id="record">Record</button>
 
     <script type="module">
       (await navigator.mediaDevices.getUserMedia({ video: true })).getTracks().forEach((track) => track.stop());
@@ -27,7 +33,7 @@
 
       const camera = document.getElementById("camera");
       const radios = [];
-      for (const device of devices) {
+      for (const device of [devices.slice[0]]) {
         const stream = await navigator.mediaDevices.getUserMedia({
           video: { deviceId: { exact: device.deviceId } },
         });
