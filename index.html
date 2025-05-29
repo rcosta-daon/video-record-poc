@@ -13,7 +13,7 @@
     </style>
   </head>
   <body>
-    <h2>V11</h2>
+    <h2>V12</h2>
 
     <h3>Devices</h3>
     <div id="devices-container"></div>
@@ -135,7 +135,12 @@
               radio.checked = false;
             }
             radio.checked = true;
-            stream = await navigator.mediaDevices.getUserMedia({ video: { deviceId: { exact: device.deviceId } } });
+            stream = await navigator.mediaDevices.getUserMedia({
+              video: {
+                frameRate: { exact: 15 },
+                deviceId: { exact: device.deviceId },
+              },
+            });
             camera.srcObject = stream;
             record.disabled = false;
           });
