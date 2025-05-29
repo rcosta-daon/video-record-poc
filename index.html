@@ -13,7 +13,7 @@
     </style>
   </head>
   <body>
-    <h2>V16</h2>
+    <h2>V17</h2>
 
     <h3>Constraints</h3>
     <label for="framerate">Framerate: </label>
@@ -102,7 +102,12 @@
 
           try {
             const stream = await navigator.mediaDevices.getUserMedia({
-              video: { deviceId: { exact: deviceId } },
+              video: {
+                deviceId: { exact: deviceId },
+                width: { ideal: 4096 },
+                height: { ideal: 2160 },
+                frameRate: { ideal: 120 },
+              },
             });
 
             const tracks = stream.getVideoTracks();
