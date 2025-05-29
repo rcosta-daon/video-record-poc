@@ -164,7 +164,7 @@
             radio.checked = true;
             stream = await navigator.mediaDevices.getUserMedia({
               video: {
-                frameRate: { exact: values.frameRate },
+                frameRate: { exact: values.framerate },
                 width: { exact: values.width },
                 height: { exact: values.height },
                 deviceId: { exact: device.deviceId },
