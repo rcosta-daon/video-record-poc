@@ -13,7 +13,7 @@
     </style>
   </head>
   <body>
-    <h2>V17</h2>
+    <h2>V18</h2>
 
     <h3>Constraints</h3>
     <label for="framerate">Framerate: </label>
@@ -24,10 +24,13 @@
     <br />
     <label for="height">Height: </label>
     <input type="number" id="height" name="height" value="480" />
-    <br />
 
     <h3>MIME type</h3>
     <select id="mimeType"></select>
+
+    <h3>Bitrate</h3>
+    <label for="bitrate">bitrate (kbps): </label>
+    <input type="number" id="bitrate" name="bitrate" value="500" />
 
     <h3>Devices</h3>
     <div id="devices-container"></div>
@@ -140,7 +143,10 @@
       }
 
       function startRecord() {
-        const mediaRecorder = new MediaRecorder(stream, { mimeType });
+        const mediaRecorder = new MediaRecorder(stream, {
+          mimeType,
+          videoBitsPerSecond: values.bitrate * 1000,
+        });
 
         const buffer = [];
         mediaRecorder.addEventListener("dataavailable", (event) => {
@@ -191,6 +197,7 @@
       addValueListener("framerate");
       addValueListener("width");
       addValueListener("height");
+      addValueListener("bitrate");
 
       await requestPermission();
 
