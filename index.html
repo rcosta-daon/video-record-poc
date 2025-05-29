@@ -13,7 +13,18 @@
     </style>
   </head>
   <body>
-    <h2>V12</h2>
+    <h2>V13</h2>
+
+    <h3>Constraints</h3>
+    <label for="framerate">Framerate: </label>
+    <input type="number" id="framerate" name="framerate" value="30" />
+    <br />
+    <label for="width">Width: </label>
+    <input type="number" id="width" name="width" value="640" />
+    <br />
+    <label for="height">Height: </label>
+    <input type="number" id="height" name="height" value="480" />
+    <br />
 
     <h3>Devices</h3>
     <div id="devices-container"></div>
@@ -24,6 +35,7 @@
     <h3>Record</h3>
     <label for="duration">Duration in seconds: </label>
     <input type="number" id="duration" name="duration" value="3" />
+    <br />
     <br />
     <button id="record" disabled>Record</button>
 
@@ -116,6 +128,21 @@
         }, 100);
       }
 
+      const values = {};
+
+      function addValueListener(name) {
+        const input = document.getElementById(name);
+        values[name] = Number(input.value);
+        input.addEventListener("change", () => {
+          values[name] = Number(input.value);
+        });
+      }
+
+      addValueListener("duration");
+      addValueListener("framerate");
+      addValueListener("width");
+      addValueListener("height");
+
       await requestPermission();
 
       const devicesContainer = document.getElementById("devices-container");
@@ -137,7 +164,9 @@
             radio.checked = true;
             stream = await navigator.mediaDevices.getUserMedia({
               video: {
-                frameRate: { exact: 15 },
+                frameRate: { ideal: values.frameRate },
+                width: { ideal: values.width },
+                height: { ideal: values.height },
                 deviceId: { exact: device.deviceId },
               },
             });
@@ -160,12 +189,6 @@
         }
       }
 
-      const durationInput = document.getElementById("duration");
-      let duration = Number(durationInput.value);
-      durationInput.addEventListener("change", () => {
-        duration = Number(durationInput.value);
-      });
-
       record.addEventListener("click", () => {
         record.disabled = true;
         const { buffer, mediaRecorder } = startRecord();
@@ -178,7 +201,7 @@
           downloadBlob(blob, fileName);
 
           record.disabled = false;
-        }, duration * 1000);
+        }, values.duration * 1000);
       });
     </script>
   </body>
