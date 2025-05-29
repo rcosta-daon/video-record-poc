@@ -13,7 +13,7 @@
     </style>
   </head>
   <body>
-    <h2>V8</h2>
+    <h2>V9</h2>
 
     <h3>Devices</h3>
     <div id="devices-container"></div>
@@ -25,7 +25,7 @@
     <label for="duration">Duration in seconds: </label>
     <input type="number" id="duration" name="duration" value="3" />
     <br />
-    <button id="record">Record</button>
+    <button id="record" disabled>Record</button>
 
     <script type="module">
       async function requestPermission() {
@@ -66,11 +66,60 @@
         return devices;
       }
 
+      const mimeType = "video/mp4";
+
+      function mimeTypeToFileExtension(mimeType) {
+        const map = {
+          "video/mp4": ".mp4",
+          "video/webm": ".webm",
+          "video/x-matroska": ".mkv",
+        };
+
+        return map[mimeType] ?? "";
+      }
+
+      function startRecord() {
+        const mediaRecorder = new MediaRecorder(stream, { mimeType });
+
+        const buffer = [];
+        mediaRecorder.addEventListener("dataavailable", (event) => {
+          if (event.data && event.data.size > 0) {
+            buffer.push(event.data);
+          }
+
+          buffer.push();
+        });
+
+        mediaRecorder.start();
+
+        return { buffer, mediaRecorder };
+      }
+
+      function stopRecord(mediaRecorder) {
+        mediaRecorder.stop();
+      }
+
+      function downloadBlob(blob, fileName) {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.style.display = "none";
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(url);
+        }, 100);
+      }
+
       await requestPermission();
 
       const devicesContainer = document.getElementById("devices-container");
       const camera = document.getElementById("camera");
+      const record = document.getElementById("record");
       const radios = [];
+      let stream;
 
       for (const device of await getDevices()) {
         if (device.spec) {
@@ -83,9 +132,9 @@
               radio.checked = false;
             }
             radio.checked = true;
-            camera.srcObject = await navigator.mediaDevices.getUserMedia({
-              video: { deviceId: { exact: device.deviceId } },
-            });
+            stream = await navigator.mediaDevices.getUserMedia({ video: { deviceId: { exact: device.deviceId } } });
+            camera.srcObject = stream;
+            record.disabled = false;
           });
           radios.push(radio);
           const label = document.createElement("label");
@@ -103,17 +152,23 @@
         }
       }
 
-      let duration;
       const durationInput = document.getElementById("duration");
-      durationInput.value = String(duration);
+      let duration = Number(durationInput.value);
       durationInput.addEventListener("change", () => {
         duration = Number(durationInput.value);
       });
 
-      const record = document.getElementById("record");
       record.addEventListener("click", () => {
         record.disabled = true;
+        const { buffer, mediaRecorder } = startRecord();
         setTimeout(() => {
+          stopRecord(mediaRecorder);
+
+          const blob = new Blob(buffer, { type: mimeType });
+          const date = new Date().toISOString().replaceAll(/\D/, "");
+          const fileName = `${date}${mimeTypeToFileExtension(mimeType)}`;
+          downloadBlob(blob, fileName);
+
           record.disabled = false;
         }, duration * 1000);
       });
