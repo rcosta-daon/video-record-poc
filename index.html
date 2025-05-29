@@ -13,7 +13,7 @@
     </style>
   </head>
   <body>
-    <h2>V10</h2>
+    <h2>V11</h2>
 
     <h3>Devices</h3>
     <div id="devices-container"></div>
@@ -96,7 +96,10 @@
       }
 
       function stopRecord(mediaRecorder) {
-        mediaRecorder.stop();
+        return new Promise((resolve) => {
+          mediaRecorder.addEventListener("stop", () => resolve());
+          mediaRecorder.stop();
+        });
       }
 
       function downloadBlob(blob, fileName) {
@@ -161,8 +164,8 @@
       record.addEventListener("click", () => {
         record.disabled = true;
         const { buffer, mediaRecorder } = startRecord();
-        setTimeout(() => {
-          stopRecord(mediaRecorder);
+        setTimeout(async () => {
+          await stopRecord(mediaRecorder);
 
           const blob = new Blob(buffer, { type: mimeType });
           const date = new Date().toISOString().split(".")[0].replaceAll(":", "-").replace("T", " ");
