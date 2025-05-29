@@ -13,7 +13,7 @@
     </style>
   </head>
   <body>
-    <h2>V14</h2>
+    <h2>V15</h2>
 
     <h3>Constraints</h3>
     <label for="framerate">Framerate: </label>
@@ -246,7 +246,10 @@
 
           const blob = new Blob(buffer, { type: mimeType });
           const date = new Date().toISOString().split(".")[0].replaceAll(":", "-").replace("T", " ");
-          const fileName = `Video record ${date}${mimeTypeToFileExtension(mimeType)}`;
+          const safeMimeType = mimeType.replaceAll(/[^a-zA-Z0-9]/g, "");
+          const fileName = `${values.height}x${values.width} ${
+            values.framerate
+          }hz ${safeMimeType} ${date}${mimeTypeToFileExtension(mimeType)}`;
           downloadBlob(blob, fileName);
 
           record.disabled = false;
