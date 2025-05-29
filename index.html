@@ -13,7 +13,7 @@
     </style>
   </head>
   <body>
-    <h2>V9</h2>
+    <h2>V10</h2>
 
     <h3>Devices</h3>
     <div id="devices-container"></div>
@@ -165,8 +165,8 @@
           stopRecord(mediaRecorder);
 
           const blob = new Blob(buffer, { type: mimeType });
-          const date = new Date().toISOString().replaceAll(/\D/, "");
-          const fileName = `${date}${mimeTypeToFileExtension(mimeType)}`;
+          const date = new Date().toISOString().split(".")[0].replaceAll(":", "-").replace("T", " ");
+          const fileName = `Video record ${date}${mimeTypeToFileExtension(mimeType)}`;
           downloadBlob(blob, fileName);
 
           record.disabled = false;
