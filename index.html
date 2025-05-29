@@ -1,3 +1,5 @@
+<!-- enumerateDevices only works in secure contexts (HTTPS) -->
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -11,7 +13,7 @@
     </style>
   </head>
   <body>
-    <h2>V6</h2>
+    <h2>V7</h2>
 
     <h3>Devices</h3>
     <div id="devices-container"></div>
@@ -26,29 +28,52 @@
     <button id="record">Record</button>
 
     <script type="module">
-      (await navigator.mediaDevices.getUserMedia({ video: true })).getTracks().forEach((track) => track.stop());
+      async function requestPermission() {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        stream.getTracks().forEach((track) => track.stop());
+      }
 
-      const allDevices = await navigator.mediaDevices.enumerateDevices();
-      console.log(allDevices);
+      async function getDevices() {
+        const devicesInfo = await navigator.mediaDevices.enumerateDevices();
+        const videoDevicesInfo = devicesInfo.filter(({ kind }) => kind === "videoinput");
+        const devices = [];
 
-      const devices = allDevices.filter(({ kind }) => kind === "videoinput");
+        for (const videoDeviceInfo of videoDevicesInfo) {
+          const deviceId = videoDeviceInfo.deviceId;
+          const label = videoDeviceInfo.label;
+
+          try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+              video: { deviceId: { exact: deviceId } },
+            });
+
+            const tracks = stream.getVideoTracks();
+            const settings = tracks.map((track) => track.getSettings());
+            const spec = settings
+              .map((settings) => `${settings.width}x${settings.height}@${settings.frameRate}hz`)
+              .join(" ");
+
+            devices.push({ deviceId, spec, label });
+
+            for (const track of tracks) {
+              track.stop();
+            }
+          } catch (error) {
+            devices.push({ deviceId, label });
+          }
+        }
+
+        return devices;
+      }
+
+      await requestPermission();
 
       const devicesContainer = document.getElementById("devices-container");
       const camera = document.getElementById("camera");
       const radios = [];
-      for (const device of devices) {
-        try {
-          const stream = await navigator.mediaDevices.getUserMedia({
-            video: { deviceId: { exact: device.deviceId } },
-          });
-          const tracks = stream.getVideoTracks();
-          const spec = tracks
-            .map((track) => {
-              const settings = track.getSettings();
-              return `${settings.width}x${settings.height}@${settings.frameRate}hz`;
-            })
-            .join(" ");
 
+      for (const device of await getDevices()) {
+        if (device.spec) {
           const radio = document.createElement("input");
           radio.type = "radio";
           radio.id = device.deviceId;
@@ -65,16 +90,12 @@
           radios.push(radio);
           const label = document.createElement("label");
           label.htmlFor = device.deviceId;
-          label.textContent = `${device.label} ${spec}`;
+          label.textContent = `${device.label} ${device.spec}`;
 
           devicesContainer.appendChild(radio);
           devicesContainer.appendChild(label);
           devicesContainer.appendChild(document.createElement("br"));
-
-          for (const track of tracks) {
-            track.stop();
-          }
-        } catch (error) {
+        } else {
           const p = document.createElement("p");
           p.textContent = `${device.label} (failed)`;
           devicesContainer.appendChild(p);
