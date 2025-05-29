@@ -13,7 +13,7 @@
     </style>
   </head>
   <body>
-    <h2>V18</h2>
+    <h2>V19</h2>
 
     <h3>Constraints</h3>
     <label for="framerate">Framerate: </label>
@@ -261,7 +261,7 @@
           const safeMimeType = mimeType.replaceAll(/[^a-zA-Z0-9]/g, "");
           const fileName = `${values.height}x${values.width} ${values.framerate}hz ${
             values.duration
-          }s ${safeMimeType} ${date}${mimeTypeToFileExtension(mimeType)}`;
+          }s ${safeMimeType} ${values.bitrate} ${date}${mimeTypeToFileExtension(mimeType)}`;
           downloadBlob(blob, fileName);
 
           record.disabled = false;
